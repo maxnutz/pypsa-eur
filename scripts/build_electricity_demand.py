@@ -306,6 +306,12 @@ if __name__ == "__main__":
         "Filling larger gaps by copying time-slices of period " f"'{time_shift}'."
     )
     load = load.apply(fill_large_gaps, shift=time_shift)
+    
+    assert not (snakemake.params.load["supplement_synthetic_always"] and (not snakemake.params.load["supplement_synthetic"])), ("supplement_synthetic_always should only be true if supplement_synthetic is also true")
+
+    if snakemake.params.load["supplement_synthetic_always"]:
+        logger.info("Setting all values to nan to replace OPSD data for all years")
+        load[:] = np.nan
 
     if snakemake.params.load["supplement_synthetic"]:
         logger.info("Supplement missing data with synthetic data.")
@@ -325,5 +331,7 @@ if __name__ == "__main__":
     # need to reindex load time series to target year
     if fixed_year:
         load.index = load.index.map(lambda t: t.replace(year=snapshots.year[0]))
+    
+    logger.info(snakemake.output[0])
 
     load.to_csv(snakemake.output[0])

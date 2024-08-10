@@ -104,6 +104,7 @@ if __name__ == "__main__":
         from _helpers import mock_snakemake
 
         snakemake = mock_snakemake("build_cutout", cutout="europe-2013-era5")
+    
     configure_logging(snakemake)
     set_scenario_config(snakemake)
 

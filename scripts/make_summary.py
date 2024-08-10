@@ -537,21 +537,28 @@ def calculate_weighted_prices(n, label, weighted_prices):
 
 def calculate_market_values(n, label, market_values):
     # Warning: doesn't include storage units
-
+    df = pd.DataFrame({
+        'A': [1, 2, 3, 4],
+        'B': [5, 6, 7, 8]
+        }, index=['w', 'x', 'y', 'z'])
+    
+    return df
     carrier = "AC"
 
     buses = n.buses.index[n.buses.carrier == carrier]
 
     ## First do market value of generators ##
-
-    generators = n.generators.index[n.buses.loc[n.generators.bus, "carrier"] == carrier]
-
+    
+    #generators = n.generators.index[n.buses.loc[n.generators.bus, "carrier"] == carrier]
+    generators = n.generators.index    
     techs = n.generators.loc[generators, "carrier"].value_counts().index
+    
+
 
     market_values = market_values.reindex(market_values.index.union(techs))
 
     for tech in techs:
-        gens = generators[n.generators.loc[generators, "carrier"] == tech]
+        gens = generators[n.generators.loc[gen_2014.objectivenerators, "carrier"] == tech]
 
         dispatch = (
             n.generators_t.p[gens]
