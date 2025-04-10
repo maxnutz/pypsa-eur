@@ -1,0 +1,92 @@
+
+
+weather_year_1941_small:
+
+    snapshots:
+        start: "1941-01-01"
+        end: "1942-01-01"
+        inclusive: "left"
+  
+    atlite:
+        default_cutout: europe-era5-1941
+        cutouts:
+        europe-era5-1941:
+            module: era5
+            x: [-12., 42.]
+            y: [33., 72]
+            dx: 0.3
+            dy: 0.3
+            time: ['1941', '1941']
+    
+    renewable:
+        onwind:
+            cutout: europe-era5-1941
+        offwind-ac:
+            cutout: europe-era5-1941
+        offwind-dc:
+            cutout: europe-era5-1941
+        solar:
+            cutout: europe-era5-1941
+        hydro:
+            cutout: europe-era5-1941
+  
+    solar_thermal:
+            cutout: europe-era5-1941
+  
+    sector:
+            heat_demand_cutout: europe-era5-1941
+
+    lines:
+        dynamic_line_rating:
+            activate: true
+            cutout: europe-era5-1941
+
+
+    
+
+weather_year_1942_small:
+
+    snapshots:
+        start: "1942-01-01"
+        end: "1943-01-01"
+        inclusive: "left"
+  
+    atlite:
+        default_cutout: europe-era5-1942
+        cutouts:
+        europe-era5-1942:
+            module: era5
+            x: [-12., 42.]
+            y: [33., 72]
+            dx: 0.3
+            dy: 0.3
+            time: ['1942', '1942']
+    
+    renewable:
+        onwind:
+            cutout: europe-era5-1942
+        offwind-ac:
+            cutout: europe-era5-1942
+        offwind-dc:
+            cutout: europe-era5-1942
+        solar:
+            cutout: europe-era5-1942
+        hydro:
+            cutout: europe-era5-1942
+  
+    solar_thermal:
+            cutout: europe-era5-1942
+  
+    sector:
+            heat_demand_cutout: europe-era5-1942
+
+    lines:
+        dynamic_line_rating:
+            activate: true
+            cutout: europe-era5-1942
+
+
+    
+
+
+    

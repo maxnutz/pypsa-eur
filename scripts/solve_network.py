@@ -940,12 +940,13 @@ def solve_network(n, config, solving, **kwargs):
 
 
 if __name__ == "__main__":
+
     if "snakemake" not in globals():
         from _helpers import mock_snakemake
 
         snakemake = mock_snakemake(
             "solve_sector_network",
-            configfiles="../config/test/config.perfect.yaml",
+            configfiles="config/test/config.perfect.yaml",
             simpl="",
             opts="",
             clusters="37",
@@ -953,7 +954,6 @@ if __name__ == "__main__":
             sector_opts="CO2L0-1H-T-H-B-I-A-dist1",
             planning_horizons="2030",
         )
-    configure_logging(snakemake)
     set_scenario_config(snakemake)
     update_config_from_wildcards(snakemake.config, snakemake.wildcards)
 
