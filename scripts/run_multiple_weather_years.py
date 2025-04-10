@@ -145,12 +145,13 @@ def load_original_networks(start, end):
             
     return networks
     
-def operate_year_with_different_weather_year(year_system, year_weather):
+def operate_year_with_different_weather_year(year_system, year_weather, output):
     
-    file = f'/data/users/jschmidt/pypsa-eur-download-climate/pypsa-eur/results/weather_year_{year_system}/postnetworks/elec_s_37_lv1.5__Co2L0-3H-T-H-B-I-A-dist1_2050.nc'
-    n_new = pypsa.Network(file)
-    file = f'/data/users/jschmidt/pypsa-eur-download-climate/pypsa-eur/results/weather_year_{year_weather}/postnetworks/elec_s_37_lv1.5__Co2L0-3H-T-H-B-I-A-dist1_2050.nc'
-    n_weather_year = pypsa.Network(file)
+    n_new = pypsa.Network(year_system)
+    n_weather_year = pypsa.Network(year_weather)
+
+    print(n_new)
+    print(n_weather_year)
         
     n_new.generators["p_nom"] = n_new.generators["p_nom_opt"]
     n_new.generators["p_nom_extendable"] = False
@@ -161,6 +162,15 @@ def operate_year_with_different_weather_year(year_system, year_weather):
     n_new.stores["e_nom"] = n_new.stores["e_nom_opt"]
     n_new.stores["e_nom_extendable"] = False
     n_new.generators_t.p_max_pu[:] = n_weather_year.generators_t.p_max_pu.values
+    for bus in n_new.buses[n_new.buses.carrier == "AC"].index:
+        n_new.add("Generator", f'{bus} VOLL',
+            bus=bus,
+            carrier="VOLL",
+            marginal_cost=10000,
+            capital_cost=0.1,
+            p_nom=1000000,
+            p_nom_extendable=False,
+            control="")
     
     kwargs = {"solver_name": "gurobi", 
           "threads": 4, 
@@ -172,11 +182,14 @@ def operate_year_with_different_weather_year(year_system, year_weather):
          "PreDual": 0,
          "GURO_PAR_BARDENSETHRESH": 200}
     n_new.optimize(**kwargs)
-    
-    dir = f'/data/users/jschmidt/pypsa-eur-download-climate/pypsa-eur/results/weather_year_{year_system}/postnetworks/operational/'
-    Path(dir).mkdir(parents=True, exist_ok=True)
-    n_new.export_to_netcdf(f'{dir}{year_weather}.nc')
 
+    try:
+        n_new.export_to_netcdf(output)
+        print("network exported!")
+    except:
+        assert(f'Problem exporting {output}')
+         
+    
 def operate_year_with_adjusted_renewables(year_system, adjust_factor):
     n_new = networks[year_system].copy()
     n_new.generators["p_nom"] = n_new.generators["p_nom_opt"]
@@ -195,7 +208,7 @@ def operate_year_with_adjusted_renewables(year_system, adjust_factor):
         n_new.add("Generator", f'{bus} VOLL',
             bus=bus,
             carrier="VOLL",
-            marginal_cost=2000,a
+            marginal_cost=2000,
             capital_cost=0.1,
             p_nom=1000000,
             p_nom_extendable=False,
@@ -239,9 +252,13 @@ def load_all_networks():
         networks.update({int(os.path.splitext(f)[0]) : n})  
     return networks
 
-def main():
-    operate_year_with_different_weather_year(2001, 2007)
+operate_year_with_different_weather_year(snakemake.input[0], snakemake.input[1], snakemake.output[0])
 
-if __name__ == "__main__":
-    main()
+#def main():
+#    operate_year_with_different_weather_year("results/weather_year_2001/postnetworks/elec_s_37_lv1.5__Co2L0-3H-T-H-B-I-A-dist1_2050.nc",
+#                                             "results/weather_year_2001/postnetworks/elec_s_37_lv1.5__Co2L0-3H-T-H-B-I-A-dist1_2050.nc",
+#                                             "results/weather_year_2001/postnetworks/operational/2001.nc") 
+
+#if __name__ == "__main__":
+#    main()
 
