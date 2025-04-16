@@ -303,8 +303,15 @@ if __name__ == "__main__":
         ]
     )
     # select only buses with some capacity and minimal capacity factor
-    mean_profile = ds["profile"].mean("time").max(["year", "bin"])
+    # mean_profile = ds["profile"].mean("time").max(["year", "bin"])
     sum_potential = ds["p_nom_max"].sum("bin")
+    mean_profile = ds["profile"].mean("time")
+
+    if "year" in ds.indexes:
+        mean_profile = mean_profile.max("year")
+
+    print(mean_profile)
+    print(ds["p_nom_max"])
 
     ds = ds.sel(
         bus=(

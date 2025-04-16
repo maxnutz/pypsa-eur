@@ -545,9 +545,9 @@ def add_CCL_constraints(
         agg_p_nom_limits: data/agg_p_nom_minmax.csv
     """
 
-    assert planning_horizons is not None, (
-        "add_CCL_constraints are not implemented for perfect foresight, yet"
-    )
+    assert (
+        planning_horizons is not None
+    ), "add_CCL_constraints are not implemented for perfect foresight, yet"
 
     agg_p_nom_minmax = pd.read_csv(
         config["solving"]["agg_p_nom_limits"]["file"], index_col=[0, 1], header=[0, 1]
@@ -1353,18 +1353,20 @@ def solve_network(
 
 
 if __name__ == "__main__":
+
     if "snakemake" not in globals():
         from _helpers import mock_snakemake
 
         snakemake = mock_snakemake(
             "solve_sector_network",
+            configfiles="config/test/config.perfect.yaml",
+            simpl="",
             opts="",
             clusters="5",
             configfiles="config/test/config.overnight.yaml",
             sector_opts="",
             planning_horizons="2030",
         )
-    configure_logging(snakemake)
     set_scenario_config(snakemake)
     update_config_from_wildcards(snakemake.config, snakemake.wildcards)
 

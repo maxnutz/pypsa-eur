@@ -111,9 +111,9 @@ def approximate_missing_eia_stats(
 
     # fix outliers; exceptional floods in 1977-1979 in ES & PT
     if "ES" in runoff:
-        runoff.loc[1978, "ES"] = runoff.loc[1979, "ES"]
+        runoff.loc[1978, ["ES"]] = runoff.loc[1979, ["ES"]]
     if "PT" in runoff:
-        runoff.loc[1978, "PT"] = runoff.loc[1979, "PT"]
+        runoff.loc[1978, ["PT"]] = runoff.loc[1979, ["PT"]]
 
     runoff_eia = runoff.loc[eia_stats.index]
 
@@ -198,7 +198,8 @@ if __name__ == "__main__":
         shapes=country_shapes,
         smooth=True,
         lower_threshold_quantile=True,
-        normalize_using_yearly=eia_stats,
+        # normalize_using_yearly=eia_stats,
+        normalize_using_yearly=None,
     )
 
     if full_years_available:

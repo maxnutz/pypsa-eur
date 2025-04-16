@@ -156,41 +156,41 @@ def plot_h2_map(n, regions):
 
     bus_colors = {"H2 Electrolysis": "#ff29d9", "H2 Fuel Cell": "#805394"}
 
-    n.plot(
-        geomap=True,
-        bus_sizes=bus_sizes,
-        bus_colors=bus_colors,
-        link_colors=color_h2_pipe,
-        link_widths=link_widths_total,
-        branch_components=["Link"],
-        ax=ax,
-        **map_opts,
-    )
+    #n.plot(
+    #    geomap=True,
+    #    bus_sizes=bus_sizes,
+    #    bus_colors=bus_colors,
+    #    link_colors=color_h2_pipe,
+    #    link_widths=link_widths_total,
+    #    branch_components=["Link"],
+    #    ax=ax,
+    #    **map_opts,
+    #)
 
-    n.plot(
-        geomap=True,
-        bus_sizes=0,
-        link_colors=color_retrofit,
-        link_widths=link_widths_retro,
-        branch_components=["Link"],
-        ax=ax,
-        **map_opts,
-    )
+    #n.plot(
+    #    geomap=True,
+    #    bus_sizes=0,
+    #    link_colors=color_retrofit,
+    #    link_widths=link_widths_retro,
+    #    branch_components=["Link"],
+    #    ax=ax,
+    #   **map_opts,
+    #)
 
-    regions.plot(
-        ax=ax,
-        column="H2",
-        cmap="Blues",
-        linewidths=0,
-        legend=True,
-        vmax=6,
-        vmin=0,
-        legend_kwds={
-            "label": "Hydrogen Storage [TWh]",
-            "shrink": 0.7,
-            "extend": "max",
-        },
-    )
+    #regions.plot(
+    #    ax=ax,
+    #    column="H2",
+    #    cmap="Blues",
+    #    linewidths=0,
+    #    legend=True,
+    #    vmax=6,
+    #    vmin=0,
+    #    legend_kwds={
+    #        "label": "Hydrogen Storage [TWh]",
+    #        "shrink": 0.7,
+    #        "extend": "max",
+    #    },
+    #)
 
     sizes = [50, 10]
     labels = [f"{s} GW" for s in sizes]

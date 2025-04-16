@@ -293,6 +293,207 @@ def calculate_market_values(n: pypsa.Network) -> pd.Series:
         .dropna()
     )
 
+<<<<<<< HEAD
+=======
+    link_loads = {
+        "electricity": [
+            "heat pump",
+            "resistive heater",
+            "battery charger",
+            "H2 Electrolysis",
+        ],
+        "heat": ["water tanks charger"],
+        "urban heat": ["water tanks charger"],
+        "space heat": [],
+        "space urban heat": [],
+        "gas": ["OCGT", "gas boiler", "CHP electric", "CHP heat"],
+        "H2": ["Sabatier", "H2 Fuel Cell"],
+    }
+
+    for carrier, value in link_loads.items():
+        if carrier == "electricity":
+            suffix = ""
+        elif carrier[:5] == "space":
+            suffix = carrier[5:]
+        else:
+            suffix = " " + carrier
+
+        buses = n.buses.index[n.buses.index.str[2:] == suffix]
+
+        if buses.empty:
+            continue
+
+        if carrier in ["H2", "gas"]:
+            load = pd.DataFrame(index=n.snapshots, columns=buses, data=0.0)
+        else:
+            load = n.loads_t.p_set[buses.intersection(n.loads.index)]
+
+        for tech in value:
+            names = n.links.index[n.links.index.to_series().str[-len(tech) :] == tech]
+
+            if not names.empty:
+                load += (
+                    n.links_t.p0[names].T.groupby(n.links.loc[names, "bus0"]).sum().T
+                )
+
+        # Add H2 Store when charging
+        # if carrier == "H2":
+        #    stores = n.stores_t.p[buses+ " Store"].groupby(n.stores.loc[buses+ " Store", "bus"],axis=1).sum(axis=1)
+        #    stores[stores > 0.] = 0.
+        #    load += -stores
+
+        weighted_prices.loc[carrier, label] = (
+            load * n.buses_t.marginal_price[buses]
+        ).sum().sum() / load.sum().sum()
+
+        # still have no idea what this is for, only for debug reasons.
+        if carrier[:5] == "space":
+            logger.debug(load * n.buses_t.marginal_price[buses])
+
+    return weighted_prices
+
+
+def calculate_market_values(n, label, market_values):
+    # Warning: doesn't include storage units
+    df = pd.DataFrame({
+        'A': [1, 2, 3, 4],
+        'B': [5, 6, 7, 8]
+        }, index=['w', 'x', 'y', 'z'])
+    
+    return df
+    carrier = "AC"
+
+    buses = n.buses.index[n.buses.carrier == carrier]
+
+    ## First do market value of generators ##
+    
+    #generators = n.generators.index[n.buses.loc[n.generators.bus, "carrier"] == carrier]
+    generators = n.generators.index    
+    techs = n.generators.loc[generators, "carrier"].value_counts().index
+    
+
+
+    market_values = market_values.reindex(market_values.index.union(techs))
+
+    for tech in techs:
+        gens = generators[n.generators.loc[gen_2014.objectivenerators, "carrier"] == tech]
+
+        dispatch = (
+            n.generators_t.p[gens]
+            .T.groupby(n.generators.loc[gens, "bus"])
+            .sum()
+            .T.reindex(columns=buses, fill_value=0.0)
+        )
+        revenue = dispatch * n.buses_t.marginal_price[buses]
+
+        if total_dispatch := dispatch.sum().sum():
+            market_values.at[tech, label] = revenue.sum().sum() / total_dispatch
+        else:
+            market_values.at[tech, label] = np.nan
+
+    ## Now do market value of links ##
+
+    for i in ["0", "1"]:
+        all_links = n.links.index[n.buses.loc[n.links["bus" + i], "carrier"] == carrier]
+
+        techs = n.links.loc[all_links, "carrier"].value_counts().index
+
+        market_values = market_values.reindex(market_values.index.union(techs))
+
+        for tech in techs:
+            links = all_links[n.links.loc[all_links, "carrier"] == tech]
+
+            dispatch = (
+                n.links_t["p" + i][links]
+                .T.groupby(n.links.loc[links, "bus" + i])
+                .sum()
+                .T.reindex(columns=buses, fill_value=0.0)
+            )
+
+            revenue = dispatch * n.buses_t.marginal_price[buses]
+
+            if total_dispatch := dispatch.sum().sum():
+                market_values.at[tech, label] = revenue.sum().sum() / total_dispatch
+            else:
+                market_values.at[tech, label] = np.nan
+
+    return market_values
+
+
+def calculate_price_statistics(n, label, price_statistics):
+    price_statistics = price_statistics.reindex(
+        price_statistics.index.union(
+            pd.Index(["zero_hours", "mean", "standard_deviation"])
+        )
+    )
+
+    buses = n.buses.index[n.buses.carrier == "AC"]
+
+    threshold = 0.1  # higher than phoney marginal_cost of wind/solar
+
+    df = pd.DataFrame(data=0.0, columns=buses, index=n.snapshots)
+
+    df[n.buses_t.marginal_price[buses] < threshold] = 1.0
+
+    price_statistics.at["zero_hours", label] = df.sum().sum() / (
+        df.shape[0] * df.shape[1]
+    )
+
+    price_statistics.at["mean", label] = (
+        n.buses_t.marginal_price[buses].unstack().mean()
+    )
+
+    price_statistics.at["standard_deviation", label] = (
+        n.buses_t.marginal_price[buses].unstack().std()
+    )
+
+    return price_statistics
+
+
+def make_summaries(networks_dict):
+    outputs = [
+        "nodal_costs",
+        "nodal_capacities",
+        "nodal_cfs",
+        "cfs",
+        "costs",
+        "capacities",
+        "curtailment",
+        "energy",
+        "supply",
+        "supply_energy",
+        "prices",
+        "weighted_prices",
+        "price_statistics",
+        "market_values",
+        "metrics",
+    ]
+
+    columns = pd.MultiIndex.from_tuples(
+        networks_dict.keys(),
+        names=["cluster", "ll", "opt", "planning_horizon"],
+    )
+
+    df = {output: pd.DataFrame(columns=columns, dtype=float) for output in outputs}
+    for label, filename in networks_dict.items():
+        logger.info(f"Make summary for scenario {label}, using {filename}")
+
+        n = pypsa.Network(filename)
+
+        assign_carriers(n)
+        assign_locations(n)
+
+        for output in outputs:
+            df[output] = globals()["calculate_" + output](n, label, df[output])
+
+    return df
+
+
+def to_csv(df):
+    for key in df:
+        df[key].to_csv(snakemake.output[key])
+
+>>>>>>> pypsa-eur_joph/fix-hydropower-and-load-bugs
 
 if __name__ == "__main__":
     if "snakemake" not in globals():

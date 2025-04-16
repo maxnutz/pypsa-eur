@@ -10,27 +10,71 @@ if "snakemake" in globals():
 else:
     filename = "../config/scenarios.yaml"
 
-import itertools
+#import itertools
 
-# Insert your config values that should be altered in the template.
-# Change `config_section` and `config_section2` to the actual config sections.
-template = """
-scenario{scenario_number}:
-    config_section:
-        config_key: {config_value}
-    config_section2:
-        config_key2: {config_value2}
-"""
+combined_scenarios = ""
 
-# Define all possible combinations of config values.
-# This must define all config values that are used in the template.
-config_values = dict(config_value=["true", "false"], config_value2=[1, 2, 3, 4])
+for year in range(1941, 2024):
+    template = f'''
 
-combinations = [
-    dict(zip(config_values.keys(), values))
-    for values in itertools.product(*config_values.values())
-]
+weather_year_{year}:
+
+    snapshots:
+        start: "{year}-01-01"
+        end: "{year + 1}-01-01"
+        inclusive: "left"
+  
+    atlite:
+        default_cutout: europe-era5-{year}
+        cutouts:
+        europe-era5-{year}:
+            module: era5
+            x: [-12., 42.]
+            y: [33., 72]
+            dx: 0.3
+            dy: 0.3
+            time: ['{year}', '{year}']
+    
+    renewable:
+        onwind:
+            cutout: europe-era5-{year}
+        offwind-ac:
+            cutout: europe-era5-{year}
+        offwind-dc:
+            cutout: europe-era5-{year}
+        solar:
+            cutout: europe-era5-{year}
+        hydro:
+            cutout: europe-era5-{year}
+  
+    solar_thermal:
+            cutout: europe-era5-{year}
+  
+    sector:
+            heat_demand_cutout: europe-era5-{year}
+
+    lines:
+        dynamic_line_rating:
+            activate: true
+            cutout: europe-era5-{year}
+
+
+    '''
+    combined_scenarios = combined_scenarios + template
 
 with open(filename, "w") as f:
-    for i, config in enumerate(combinations):
-        f.write(template.format(scenario_number=i, **config))
+    f.write(combined_scenarios)
+
+
+#config_values = dict(year=range(1941, 1943), year_1=range(1942, 1944))
+
+#combinations = [
+ #   dict(zip(config_values.keys(), values))
+  #  for values in itertools.product(*config_values.values())
+   # #for values in itertools.combinations(config_values.values(), 2)
+    #]
+
+#with open(filename, "w") as f:
+ #   for i, config in enumerate(combinations):
+  #      f.write(template.format(scenario_number=i, **config))
+        

@@ -162,7 +162,8 @@ if config["enable"].get("build_cutout", False):
             regions_onshore=resources("regions_onshore.geojson"),
             regions_offshore=resources("regions_offshore.geojson"),
         output:
-            protected(CDIR + "{cutout}.nc"),
+            protected("cutouts/" + CDIR + "{cutout}.nc"),
+            #"cutouts/" + CDIR + "{cutout}.nc",            
         log:
             logs(CDIR + "build_cutout/{cutout}.log"),
         benchmark:
