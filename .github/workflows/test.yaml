@@ -27,8 +27,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Run windows only on scheduled runs on Sundays, otherwise ignore
-        os: ${{ github.event.schedule == '0 5 * * 0' && fromJson('["ubuntu", "macos", "windows"]') || fromJson('["ubuntu", "macos"]') }}
+        # Run windows only on scheduled runs on Sundays, otherwise ignore --> ignore windows and macos completely
+        os: ${{ github.event.schedule == '0 5 * * 0' && fromJson('["ubuntu"]') || fromJson('["ubuntu"]') }}
 
     defaults:
       run:
